@@ -3,6 +3,19 @@
 - <b>All contributors are constantly investigating clever workarounds that allow us to utilize the full potential of ChatGPT. Yes, this includes making ChatGPT improve its own jailbreak prompts.
 ---
 
+## Zapier + Zillow Property Alert Automation
+
+A ready-to-use Zapier workflow that watches Zillow alert emails for two property
+categories and forwards each alert to ChatGPT for analysis and summary:
+
+- **Houses** — $150,000 to $400,000
+- **Land** — $50,000 to $400,000
+
+See the full setup guide, Zap configuration, and ChatGPT prompts in:
+[**zapier_zillow_property_alerts.md**](zapier_zillow_property_alerts.md)
+
+---
+
 - <https://chat.openai.com/>
 <!--
 - [Is ChatGPT "DAN" Real? Gonna find out [Part 1]](https://www.youtube.com/watch?v=-q8woRG9FrI) \
