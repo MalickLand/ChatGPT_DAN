@@ -1,0 +1,184 @@
+{
+  "name": "Zillow WV Property Alerts to ChatGPT",
+  "description": "Watches Zillow alert emails for houses and land in Hampshire, Mineral, and Hardy County WV, then forwards each to ChatGPT for analysis and summary.",
+  "zaps": [
+    {
+      "id": "zap_houses_150k_400k",
+      "name": "Zillow Houses $150K-$400K — Hampshire, Mineral, Hardy County WV",
+      "trigger": {
+        "app": "Gmail",
+        "event": "New Email Matching Search",
+        "config": {
+          "search_string": "from:zillow.com subject:(\"New listing\" OR \"price\" OR \"Zillow alert\") (\"Hampshire County\" OR \"Mineral County\" OR \"Hardy County\") (\"WV\" OR \"West Virginia\")",
+          "label": "Zillow/Houses",
+          "polling_interval_minutes": 15
+        }
+      },
+      "filters": [
+        {
+          "name": "Price Range Filter — Houses $150K to $400K",
+          "conditions": {
+            "match": "all",
+            "rules": [
+              {
+                "field": "body_plain",
+                "operator": "contains",
+                "values_any_of": [
+                  "$1[5-9]\\d,\\d{3}",
+                  "$[2-3]\\d{2},\\d{3}",
+                  "$400,000",
+                  "150,000",
+                  "200,000",
+                  "250,000",
+                  "300,000",
+                  "350,000",
+                  "400,000"
+                ]
+              },
+              {
+                "field": "body_plain",
+                "operator": "does_not_contain",
+                "values_all_of": ["land", "lot", "acres only", "vacant lot"]
+              }
+            ]
+          }
+        }
+      ],
+      "actions": [
+        {
+          "step": 1,
+          "app": "Code by Zapier",
+          "event": "Run Javascript",
+          "config": {
+            "description": "Parse Zillow email body to extract listing details",
+            "input_data": {
+              "email_subject": "{{trigger.subject}}",
+              "email_body": "{{trigger.body_plain}}",
+              "email_date": "{{trigger.date}}"
+            },
+            "code_file": "parse-zillow-email.js"
+          }
+        },
+        {
+          "step": 2,
+          "app": "ChatGPT",
+          "event": "Conversation",
+          "config": {
+            "model": "gpt-4",
+            "system_prompt_file": "chatgpt-prompt-houses.txt",
+            "user_message": "Analyze this Zillow house listing alert:\n\nSubject: {{steps.1.subject}}\nDate: {{steps.1.date}}\nCounty: {{steps.1.county}}\nPrice: {{steps.1.price}}\nAddress: {{steps.1.address}}\nBedrooms: {{steps.1.bedrooms}}\nBathrooms: {{steps.1.bathrooms}}\nSquare Feet: {{steps.1.sqft}}\nLot Size: {{steps.1.lot_size}}\nListing URL: {{steps.1.url}}\n\nFull Email Body:\n{{steps.1.cleaned_body}}",
+            "max_tokens": 1024
+          }
+        },
+        {
+          "step": 3,
+          "app": "Gmail",
+          "event": "Send Email",
+          "config": {
+            "to": "{{user_email}}",
+            "subject": "🏠 Zillow Analysis: {{steps.1.address}} — {{steps.1.price}}",
+            "body": "{{steps.2.reply}}"
+          }
+        }
+      ]
+    },
+    {
+      "id": "zap_land_50k_400k",
+      "name": "Zillow Land $50K-$400K — Hampshire, Mineral, Hardy County WV",
+      "trigger": {
+        "app": "Gmail",
+        "event": "New Email Matching Search",
+        "config": {
+          "search_string": "from:zillow.com subject:(\"New listing\" OR \"price\" OR \"Zillow alert\") (\"Hampshire County\" OR \"Mineral County\" OR \"Hardy County\") (\"WV\" OR \"West Virginia\")",
+          "label": "Zillow/Land",
+          "polling_interval_minutes": 15
+        }
+      },
+      "filters": [
+        {
+          "name": "Price Range Filter — Land $50K to $400K",
+          "conditions": {
+            "match": "all",
+            "rules": [
+              {
+                "field": "body_plain",
+                "operator": "contains",
+                "values_any_of": [
+                  "$5\\d,\\d{3}",
+                  "$[6-9]\\d,\\d{3}",
+                  "$1\\d{2},\\d{3}",
+                  "$[2-3]\\d{2},\\d{3}",
+                  "$400,000",
+                  "50,000",
+                  "75,000",
+                  "100,000",
+                  "150,000",
+                  "200,000"
+                ]
+              },
+              {
+                "field": "body_plain",
+                "operator": "contains",
+                "values_any_of": ["land", "lot", "acres", "vacant", "parcel", "tract"]
+              }
+            ]
+          }
+        }
+      ],
+      "actions": [
+        {
+          "step": 1,
+          "app": "Code by Zapier",
+          "event": "Run Javascript",
+          "config": {
+            "description": "Parse Zillow email body to extract land listing details",
+            "input_data": {
+              "email_subject": "{{trigger.subject}}",
+              "email_body": "{{trigger.body_plain}}",
+              "email_date": "{{trigger.date}}"
+            },
+            "code_file": "parse-zillow-email.js"
+          }
+        },
+        {
+          "step": 2,
+          "app": "ChatGPT",
+          "event": "Conversation",
+          "config": {
+            "model": "gpt-4",
+            "system_prompt_file": "chatgpt-prompt-land.txt",
+            "user_message": "Analyze this Zillow land listing alert:\n\nSubject: {{steps.1.subject}}\nDate: {{steps.1.date}}\nCounty: {{steps.1.county}}\nPrice: {{steps.1.price}}\nAddress/Location: {{steps.1.address}}\nAcreage: {{steps.1.acreage}}\nLot Size: {{steps.1.lot_size}}\nZoning: {{steps.1.zoning}}\nListing URL: {{steps.1.url}}\n\nFull Email Body:\n{{steps.1.cleaned_body}}",
+            "max_tokens": 1024
+          }
+        },
+        {
+          "step": 3,
+          "app": "Gmail",
+          "event": "Send Email",
+          "config": {
+            "to": "{{user_email}}",
+            "subject": "🏞️ Zillow Land Analysis: {{steps.1.address}} — {{steps.1.price}} ({{steps.1.acreage}})",
+            "body": "{{steps.2.reply}}"
+          }
+        }
+      ]
+    }
+  ],
+  "counties": [
+    "Hampshire County, WV",
+    "Mineral County, WV",
+    "Hardy County, WV"
+  ],
+  "categories": {
+    "houses": {
+      "min_price": 150000,
+      "max_price": 400000,
+      "property_types": ["single_family", "multi_family", "townhouse", "condo"]
+    },
+    "land": {
+      "min_price": 50000,
+      "max_price": 400000,
+      "property_types": ["land", "lot", "farm", "ranch"]
+    }
+  }
+}
