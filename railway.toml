@@ -1,12 +1,6 @@
-[deploy]
-healthcheckPath = "/"
-restartPolicyType = "ON_FAILURE"
-restartPolicyMaxRetries = 3
-
 [build]
 builder = "NIXPACKS"
 
-[environments.production.variables]
-NODE_ENV = "production"
-DATABASE_PATH = "/app/database/wv_property.db"
-NOTIFICATION_EMAIL = "phil@malickland.net"
+[deploy]
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
